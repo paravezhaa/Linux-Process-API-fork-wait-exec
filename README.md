@@ -77,7 +77,7 @@ Test the C Program for the desired output.
 
 
 
-
+![image](images/output1.png)
 
 
 
