@@ -1,21 +1,42 @@
-//C Program to execute Linux system commands using Linux API system calls exec() family
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 int main() {
-    int pid = fork();
+    int status;
 
-    if (pid == 0) {
-        printf("I am child, my PID is %d\n", getpid());
-        printf("My parent PID is: %d\n", getppid());
-        sleep(2);
+    printf("Running ps with execl\n");
+    if (fork() == 0) {
+        execl("/bin/ps", "ps", "-f", NULL);   // full path required
+        perror("execl failed");
+        exit(1);
     }
+    wait(&status);
+
+    if (WIFEXITED(status)) {
+        printf("Child exited with status: %d\n", WEXITSTATUS(status));
+    } 
     else {
-        printf("I am parent, my PID is %d\n", getpid());
-        wait(NULL);
+        printf("Child did not exit successfully\n");
     }
 
+    printf("Running ps with execlp (without full path)\n");
+    if (fork() == 0) {
+        execlp("ps", "ps", "-f", NULL);   // execlp searches PATH
+        perror("execlp failed");
+        exit(1);
+    }
+    wait(&status);
+
+    if (WIFEXITED(status)) {
+        printf("Child exited for execlp with status: %d\n", WEXITSTATUS(status));
+    } 
+    else {
+        printf("Child did not exit successfully\n");
+    }
+
+    printf("Done.\n");
     return 0;
 }
